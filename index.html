@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> My Time Capsule</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="light-theme">
+    <h1>My Time Capsule</h1>
+    <button class="themechange">Theme</button>
+
+    <div class="inputcontainer">
+        <div class="inner2"><span>Enter the message :</span><textarea id="writemsg"></textarea></div>
+        <div class="inner">
+         <span>Give the date to be read :</span><input id="dateinputid" type="date">
+        </div>
+        <button class="savebtn">Bury The Message</button>
+    </div>
+
+    <div class="outputcontainer">
+        <div>
+            <p id="days"> 00</p>
+            <span>Days</span>
+        </div>
+        <div>
+            <p id="hours"> 00</p>
+            <span>Hours</span>
+        </div>
+        <div>
+            <p id="minutes"> 00</p>
+            <span>Minutes</span>
+        </div>
+        <div>
+            <p id="seconds"> 00</p>
+            <span>seconds</span>
+        </div>
+    </div>
+    <img src="clock.png" class="clock">
+
+    <script>
+        const body=document.body;
+        const themechange=document.querySelector(".themechange");
+
+        themechange.addEventListener("click",()=>{
+            body.classList.toggle("dark-theme");
+            body.classList.toggle("light-theme");
+            if(body.classList.contains("dark-theme")){
+                themechange.textContent="Light";
+            }
+            else{
+                themechange.textContent="Dark";
+            }
+        })
+
+        const writemsg=document.getElementById("writemsg");
+        const ddate=document.getElementById("dateinputid");
+        const savebtn=document.querySelector(".savebtn");
+
+        
+        savebtn.addEventListener("click",()=>{
+            const msg=writemsg.value;
+            const ldate=ddate.value;
+            if(msg=="" || ldate==""){
+                alert("u missed to give the input");
+                return; 
+            }
+            localStorage.setItem("message",JSON.stringify(msg));
+        
+            localStorage.setItem("date",JSON.stringify(ldate));
+            // count(ldate,msg);
+        });
+       
+        function count(date,msg){
+            let countDownTime= new Date(date).getTime();
+            
+            let x=setInterval(()=>{
+                let now=new Date().getTime();
+                let distance=countDownTime-now;
+                const outputcontainer=document.querySelector(".outputcontainer");
+                if (distance <= 0) {
+                    clearInterval(x);
+                    outputcontainer.innerHTML=`<p>${JSON.parse(msg)}</p> 
+                                                <button onclick="remove()" class="del">Delete</button>
+                                                <button onclick="archive()" class="archi">Archive</button>`
+                    return;
+                }
+                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                const d=document.getElementById("days");
+                const h=document.getElementById("hours");
+                const m=document.getElementById("minutes");
+                const s=document.getElementById("seconds");
+
+                d.textContent=days;
+                h.textContent=hours;
+                m.textContent=minutes;
+                s.textContent=seconds;
+
+
+            }, 1000);
+        }
+        const outputcontainer=document.querySelector(".outputcontainer");
+        function fetchMessage(){
+            let mes=localStorage.getItem("message");
+            let da=localStorage.getItem("date");
+            if(mes===null){
+                outputcontainer.innerHTML="No message";  
+            }
+            else{
+                count(da,mes);
+            }  
+        }
+        fetchMessage();
+
+        let remove=function(){
+            localStorage.removeItem("message");
+            localStorage.removeItem("date");         
+            fetchMessage();
+        }
+        
+        let archive = function() {
+            const msg = localStorage.getItem("message");
+            const date = localStorage.getItem("date");
+            let archive = JSON.parse(localStorage.getItem("archive")) || [];
+            archive.push({ message: JSON.parse(msg), date: JSON.parse(date), archivedAt: new Date().toISOString() });
+            localStorage.setItem("archive", JSON.stringify(archive));
+            localStorage.removeItem("message");
+            localStorage.removeItem("date");
+            outputcontainer.innerHTML = `<p> Message archived!</p>`;
+        };
+    </script>
+</body>
+</html>
